@@ -2,7 +2,7 @@ const MODULE_NAMES = {
   patients: 'Gestión de pacientes', appointments: 'Agenda de citas',
   medical_records: 'Historias clínicas', prescriptions: 'Recetas médicas',
   test_reports: 'Reportes de laboratorio', leads: 'Gestión de leads',
-  telemedicine: 'Telemedicina', patient_followup: 'Seguimiento con IA',
+  telemedicine: 'Telemedicina', patient_followup: 'Seguimiento de pacientes', patient_followup_ai: 'Seguimiento Inteligente con IA',
   odontogram: 'Odontograma', aesthetic_simulator: 'Simulador estético',
   room_management: 'Gestión de salas', ai_assistant: 'Asistente IA',
   consultation_recorder: 'Grabador de consultas', medgemma: 'Diagnóstico con IA',
