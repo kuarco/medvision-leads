@@ -107,7 +107,7 @@ export default async function handler(req, res) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'cotizador@medvision.pro',
+      from: 'medvision.cotizaciones@notifyby.email',
       to: ['oliver@kuarco.com', 'juan@kuarco.com'],
       subject: `Nueva cotización — ${payload.clinic?.name} (${payload.total_modules} módulos)`,
       html: buildHtml(payload),
