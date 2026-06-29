@@ -72,6 +72,7 @@ function buildHtml(p) {
         <tr><td style="padding:6px 12px;color:#8A857F;border-bottom:1px solid #E5E4E3;">Especialidad</td><td style="padding:6px 12px;border-bottom:1px solid #E5E4E3;">${c.specialty}</td></tr>
         <tr><td style="padding:6px 12px;color:#8A857F;border-bottom:1px solid #E5E4E3;">Colaboradores totales</td><td style="padding:6px 12px;font-weight:600;border-bottom:1px solid #E5E4E3;">${p.total_staff}</td></tr>
         ${p.accounting_software ? `<tr><td style="padding:6px 12px;color:#8A857F;">Software contable</td><td style="padding:6px 12px;font-weight:600;">${p.accounting_software}</td></tr>` : ''}
+        ${p.clinical_specialties && p.clinical_specialties.length ? `<tr><td style="padding:6px 12px;color:#8A857F;">Especialidades clínicas</td><td style="padding:6px 12px;font-weight:600;">${p.clinical_specialties.join(', ')}</td></tr>` : ''}
       </table>
 
       ${clinicRows ? `

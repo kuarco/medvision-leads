@@ -473,6 +473,71 @@
     .staff-total-row.warn strong { color: #d9534f; }
     .clinic-name-full { grid-column: 1 / -1; }
 
+    /* ─── Specialty badge ───────────────────────────────────────────────── */
+    .mod-specialty {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: var(--highlight-text);
+      background: var(--highlight);
+      padding: 2px 8px;
+      border-radius: 99px;
+      margin-bottom: 8px;
+    }
+
+    /* ─── Clinical specialty reveal ─────────────────────────────────────── */
+    .clinical-reveal {
+      display: none;
+      grid-column: 1 / -1;
+      background: var(--accent-light);
+      border: 1.5px solid var(--accent-border);
+      border-radius: var(--radius-sm);
+      padding: 16px 18px;
+      margin-top: 4px;
+      animation: fadeIn .2s ease;
+    }
+    .clinical-reveal.visible { display: block; }
+    .clinical-reveal label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 10px;
+    }
+    .specialty-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .specialty-chip {
+      padding: 6px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--surface);
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      user-select: none;
+    }
+    .specialty-chip:hover { border-color: var(--accent); }
+    .specialty-chip.on {
+      background: var(--accent);
+      color: var(--highlight);
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+    .clinical-reveal .hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
     /* ─── Tooltip ───────────────────────────────────────────────────────── */
     .mod-card { position: relative; }
     .mod-tooltip {
@@ -729,9 +794,9 @@ const CAT_STEPS = [
     title:'Clínico especializado',
     sub:'Herramientas para especialidades médicas específicas.',
     modules:[
-      {code:'odontogram',          name:'Odontograma',         desc:'Carta dental e historial odontológico', icon:'', tooltip:'Carta dental interactiva con registro por diente, historial odontológico, periograma, diagnósticos CIE-10, planes de tratamiento y consentimientos informados.'},
-      {code:'aesthetic_simulator', name:'Simulador estético',  desc:'Simulación de procedimientos',          icon:'', tooltip:'Simula procedimientos estéticos sobre fotografías del paciente con IA. Muestra resultados antes y después para apoyar la toma de decisiones clínicas.'},
-      {code:'room_management',     name:'Gestión de salas',    desc:'Asignación y control de salas',         icon:'', tooltip:'Reserva y controla la disponibilidad de consultorios, quirófanos y salas de procedimientos. Evita conflictos de horario y optimiza el uso del espacio.'},
+      {code:'odontogram',          name:'Odontograma',         desc:'Carta dental e historial odontológico', specialty:'Odontología', icon:'', tooltip:'Carta dental interactiva con registro por diente, historial odontológico, periograma, diagnósticos CIE-10, planes de tratamiento y consentimientos informados. Exclusivo para clínicas dentales.'},
+      {code:'aesthetic_simulator', name:'Simulador estético',  desc:'Simulación de procedimientos',          specialty:'Medicina Estética', icon:'', tooltip:'Simula procedimientos estéticos sobre fotografías del paciente con IA. Muestra resultados antes y después para apoyar la decisión del paciente. Ideal para cirugía estética, dermatología y medicina estética.'},
+      {code:'room_management',     name:'Gestión de salas',    desc:'Asignación y control de salas',         specialty:'Todas las especialidades', icon:'', tooltip:'Reserva y controla la disponibilidad de consultorios, quirófanos y salas de procedimientos. Evita conflictos de horario y optimiza el uso del espacio clínico. Aplica a cualquier especialidad con múltiples salas.'},
     ]
   },
   {
@@ -1109,9 +1174,20 @@ function renderCat(container, cat) {
           ${m.tooltip ? `<div class="mod-tooltip">${m.tooltip}</div>` : ''}
           <input type="checkbox" ${sel.has(m.code)?'checked':''} onclick="event.stopPropagation();toggleMod('${cat.id}','${m.code}',${total})">
           <span class="mod-icon">${ICONS[m.code] || ''}</span>
+          ${m.specialty ? `<span class="mod-specialty">${m.specialty}</span>` : ''}
           <div class="mod-name">${m.name}</div>
           <div class="mod-desc">${m.desc}</div>
         </div>`).join('')}
+      ${cat.id === 'clinical' ? `
+        <div class="clinical-reveal ${sel.size > 0 ? 'visible' : ''}" id="clinical-specialty-wrap">
+          <label>¿Para qué especialidad(es) clínicas necesitas estos módulos?</label>
+          <div class="specialty-chips">
+            ${['Odontología','Medicina Estética','Cirugía Plástica','Dermatología','Medicina General','Ginecología','Pediatría','Oftalmología','Otra'].map(s => `
+              <span class="specialty-chip ${(clinicData.clinicalSpecialties||[]).includes(s)?'on':''}"
+                onclick="toggleClinicalSpecialty('${s}')">${s}</span>`).join('')}
+          </div>
+          <p class="hint">Puedes seleccionar más de una. Esto nos ayuda a configurar los módulos correctamente para tu especialidad.</p>
+        </div>` : ''}
       ${cat.id === 'finance' ? `
         <div class="accounting-reveal ${sel.has('accounting') ? 'visible' : ''}" id="accounting-software-wrap">
           <label>¿Tienes un software contable actual o deseas integrar con alguno?</label>
@@ -1152,6 +1228,24 @@ function toggleMod(catId, code, total) {
       else { wrap.classList.remove('visible'); clinicData.accountingSoftware = ''; }
     }
   }
+  // Show/hide clinical specialty selector
+  const clinicalWrap = document.getElementById('clinical-specialty-wrap');
+  if (clinicalWrap) {
+    if (sel.size > 0) { clinicalWrap.classList.add('visible'); }
+    else { clinicalWrap.classList.remove('visible'); clinicData.clinicalSpecialties = []; }
+  }
+}
+
+function toggleClinicalSpecialty(name) {
+  if (!clinicData.clinicalSpecialties) clinicData.clinicalSpecialties = [];
+  const arr = clinicData.clinicalSpecialties;
+  const idx = arr.indexOf(name);
+  if (idx > -1) { arr.splice(idx, 1); }
+  else { arr.push(name); }
+  // Update chip UI
+  document.querySelectorAll('.specialty-chip').forEach(chip => {
+    chip.classList.toggle('on', arr.includes(chip.textContent.trim()));
+  });
 }
 
 function toggleAll(catId, total) {
@@ -1264,6 +1358,7 @@ async function submitQuote() {
     modules: Object.fromEntries(CAT_STEPS.map(c => [c.id, [...selected[c.id]]])),
     total_modules: totalMods,
     accounting_software: clinicData.accountingSoftware || null,
+    clinical_specialties: clinicData.clinicalSpecialties || [],
   };
 
   const btn = document.querySelector('.nav .btn-next');
