@@ -9,7 +9,7 @@ const MODULE_NAMES = {
   billing: 'Facturación', accounting: 'Contabilidad', expenses: 'Gastos',
   commissions: 'Comisiones', payroll: 'Nómina', credit_notes: 'Notas de crédito',
   patient_wallet: 'Wallet del paciente', fixed_assets: 'Activos fijos',
-  insurance_claims: 'Reclamos de seguro', electronic_invoice: 'Factura electrónica',
+  insurance_claims: 'Reclamos de seguro', electronic_invoice: 'Factura electrónica', erp_integration: 'Integraciones ERP',
   staff: 'Personal', training: 'Capacitación', services: 'Catálogo de servicios',
   departments: 'Departamentos', lab_vendors: 'Proveedores de lab', tasks: 'Gestión de tareas',
   inventory: 'Inventario', suppliers: 'Proveedores', purchase_orders: 'Órdenes de compra',

@@ -793,6 +793,7 @@ const ICONS = {
   'fixed_assets': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
   'insurance_claims': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>`,
   'electronic_invoice': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+  'erp_integration': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="8" height="8" rx="1"/><rect x="14" y="3" width="8" height="8" rx="1"/><rect x="2" y="13" width="8" height="8" rx="1"/><rect x="14" y="13" width="8" height="8" rx="1"/><line x1="10" y1="7" x2="14" y2="7"/><line x1="10" y1="17" x2="14" y2="17"/><line x1="18" y1="11" x2="18" y2="13"/><line x1="6" y1="11" x2="6" y2="13"/></svg>`,
   'staff': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
   'training': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
   'services': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
@@ -862,6 +863,7 @@ const CAT_STEPS = [
       {code:'fixed_assets',      name:'Activos fijos',        desc:'Equipos y mobiliario',                 icon:'', tooltip:'Registra y controla los activos fijos de la clínica: equipos médicos, mobiliario y tecnología. Lleva el control de depreciación con integración contable automática.'},
       {code:'insurance_claims',  name:'Reclamos de seguro',   desc:'CxC aseguradoras',                     icon:'', tooltip:'Gestiona reclamos ante aseguradoras médicas. Controla copagos, cuentas por cobrar con aseguradoras y da seguimiento al estado de cada reclamación.'},
       {code:'electronic_invoice',name:'Factura electrónica',  desc:'FE ante autoridades fiscales',         icon:'', tooltip:'Emite facturas electrónicas válidas ante las autoridades fiscales de tu país. Cumple con las normativas locales de facturación electrónica de forma automática.'},
+      {code:'erp_integration',   name:'Integraciones ERP',   desc:'Conecta con tu sistema contable actual', icon:'', tooltip:'Sincroniza MedVision con tu ERP o software contable existente. Los asientos, facturas y gastos fluyen automáticamente eliminando la doble entrada de datos. Compatible con QuickBooks, Xero, SAP, Odoo y más.'},
     ]
   },
   {
@@ -1216,7 +1218,7 @@ function renderCat(container, cat) {
           ${m.tooltip ? `<span class="mod-info-btn" onclick="event.stopPropagation();showTooltip(this)">i</span>` : ''}
         </div>`).join('')}
       ${cat.id === 'finance' ? `
-        <div class="accounting-reveal ${sel.has('accounting') ? 'visible' : ''}" id="accounting-software-wrap">
+        <div class="accounting-reveal ${sel.has('erp_integration') ? 'visible' : ''}" id="accounting-software-wrap">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
             <span style="font-size:12px;font-weight:700;color:var(--text);">Integraciones con sistemas ERP y contables</span>
             <span class="mod-info-btn" style="display:inline-flex;position:static;width:18px;height:18px;line-height:15px;flex-shrink:0;" onclick="event.stopPropagation();showErpTooltip(this)">i</span>
@@ -1255,11 +1257,11 @@ function toggleMod(catId, code, total) {
   else               { sel.add(code);    card.classList.add('on');    cb.checked = true;  }
   document.getElementById('selN').textContent = sel.size;
   document.getElementById('toggleAllBtn').textContent = sel.size === total ? 'Deseleccionar todos' : 'Seleccionar todos';
-  // Show/hide accounting software selector
-  if (code === 'accounting') {
+  // Show/hide ERP integration selector
+  if (code === 'erp_integration') {
     const wrap = document.getElementById('accounting-software-wrap');
     if (wrap) {
-      if (sel.has('accounting')) { wrap.classList.add('visible'); }
+      if (sel.has('erp_integration')) { wrap.classList.add('visible'); }
       else { wrap.classList.remove('visible'); clinicData.accountingSoftware = ''; }
     }
   }
