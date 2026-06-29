@@ -1211,21 +1211,10 @@ function renderCat(container, cat) {
           ${m.tooltip ? `<div class="mod-tooltip">${m.tooltip}</div>` : ''}
           <input type="checkbox" ${sel.has(m.code)?'checked':''} onclick="event.stopPropagation();toggleMod('${cat.id}','${m.code}',${total})">
           <span class="mod-icon">${ICONS[m.code] || ''}</span>
-          ${m.specialty ? `<span class="mod-specialty">${m.specialty}</span>` : ''}
           <div class="mod-name">${m.name}</div>
           <div class="mod-desc">${m.desc}</div>
           ${m.tooltip ? `<span class="mod-info-btn" onclick="event.stopPropagation();showTooltip(this)">i</span>` : ''}
         </div>`).join('')}
-      ${cat.id === 'clinical' ? `
-        <div class="clinical-reveal ${sel.size > 0 ? 'visible' : ''}" id="clinical-specialty-wrap">
-          <label>¿Para qué especialidad(es) clínicas necesitas estos módulos?</label>
-          <div class="specialty-chips">
-            ${['Odontología','Medicina Estética','Cirugía Plástica','Dermatología','Medicina General','Ginecología','Pediatría','Oftalmología','Otra'].map(s => `
-              <span class="specialty-chip ${(clinicData.clinicalSpecialties||[]).includes(s)?'on':''}"
-                onclick="toggleClinicalSpecialty('${s}')">${s}</span>`).join('')}
-          </div>
-          <p class="hint">Puedes seleccionar más de una. Esto nos ayuda a configurar los módulos correctamente para tu especialidad.</p>
-        </div>` : ''}
       ${cat.id === 'finance' ? `
         <div class="accounting-reveal ${sel.has('accounting') ? 'visible' : ''}" id="accounting-software-wrap">
           <label>¿Tienes un software contable actual o deseas integrar con alguno?</label>
