@@ -70,7 +70,8 @@ function buildHtml(p) {
         <tr><td style="padding:6px 12px;color:#8A857F;border-bottom:1px solid #E5E4E3;">Teléfono</td><td style="padding:6px 12px;border-bottom:1px solid #E5E4E3;">${c.phone}</td></tr>
         <tr><td style="padding:6px 12px;color:#8A857F;border-bottom:1px solid #E5E4E3;">País</td><td style="padding:6px 12px;border-bottom:1px solid #E5E4E3;">${c.country}</td></tr>
         <tr><td style="padding:6px 12px;color:#8A857F;border-bottom:1px solid #E5E4E3;">Especialidad</td><td style="padding:6px 12px;border-bottom:1px solid #E5E4E3;">${c.specialty}</td></tr>
-        <tr><td style="padding:6px 12px;color:#8A857F;">Colaboradores totales</td><td style="padding:6px 12px;font-weight:600;">${p.total_staff}</td></tr>
+        <tr><td style="padding:6px 12px;color:#8A857F;border-bottom:1px solid #E5E4E3;">Colaboradores totales</td><td style="padding:6px 12px;font-weight:600;border-bottom:1px solid #E5E4E3;">${p.total_staff}</td></tr>
+        ${p.accounting_software ? `<tr><td style="padding:6px 12px;color:#8A857F;">Software contable</td><td style="padding:6px 12px;font-weight:600;">${p.accounting_software}</td></tr>` : ''}
       </table>
 
       ${clinicRows ? `

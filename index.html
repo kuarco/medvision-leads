@@ -505,6 +505,47 @@
     .mod-card:hover .mod-tooltip { display: block; }
     @media (hover: none) { .mod-tooltip { display: none !important; } }
 
+    /* ─── Accounting software reveal ─── */
+    .accounting-reveal {
+      display: none;
+      grid-column: 1 / -1;
+      background: var(--accent-light);
+      border: 1.5px solid var(--accent-border);
+      border-radius: var(--radius-sm);
+      padding: 16px 18px;
+      margin-top: 4px;
+      animation: fadeIn .2s ease;
+    }
+    .accounting-reveal.visible { display: block; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+    .accounting-reveal label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 8px;
+    }
+    .accounting-reveal select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--text);
+      background: var(--surface);
+      transition: border-color .15s;
+    }
+    .accounting-reveal select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(84,80,76,.12);
+    }
+    .accounting-reveal .hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 7px;
+    }
+
     /* ─── Coming soon module card ─── */
     .mod-card.coming-soon {
       opacity: 0.62;
@@ -708,7 +749,7 @@ const CAT_STEPS = [
     sub:'Todo el manejo financiero de tu clínica.',
     modules:[
       {code:'billing',           name:'Facturación',          desc:'Cobros y facturas',                    icon:'', tooltip:'Genera y gestiona facturas de pacientes con múltiples métodos de pago. Lleva el control de cobros pendientes, pagos parciales y estados de cuenta.'},
-      {code:'accounting',        name:'Contabilidad',         desc:'Partida doble y reportes financieros', icon:'', tooltip:'Contabilidad de partida doble con plan de cuentas personalizable. Asientos automáticos desde facturas y gastos. Reportes financieros: balance, estado de resultados y más.'},
+      {code:'accounting',        name:'Contabilidad Avanzada', desc:'Partida doble, asientos, conciliación e integración contable', icon:'', tooltip:'Contabilidad de partida doble con plan de cuentas personalizable. Asientos contables automáticos desde facturas, gastos y nómina. Conciliación bancaria, balance general, estado de resultados y flujo de caja. Se integra con tu software contable existente: QuickBooks, Xero, SAP, Odoo y más.'},
       {code:'expenses',          name:'Gastos',               desc:'Control de gastos operativos',         icon:'', tooltip:'Registra y categoriza los gastos operativos de la clínica. Adjunta comprobantes, asigna centros de costo y genera reportes de gasto por período o área.'},
       {code:'commissions',       name:'Comisiones',           desc:'Comisiones del personal',              icon:'', tooltip:'Calcula automáticamente comisiones para médicos y personal de ventas basadas en servicios prestados o metas. Liquida comisiones con un clic.'},
       {code:'payroll',           name:'Nómina',               desc:'Pagos al personal',                    icon:'', tooltip:'Gestiona la nómina de todo el personal de la clínica. Calcula salarios, deducciones, bonos y genera los recibos de pago de forma automática cada período.'},
@@ -1069,6 +1110,14 @@ function renderCat(container, cat) {
           <div class="mod-name">${m.name}</div>
           <div class="mod-desc">${m.desc}</div>
         </div>`).join('')}
+      ${cat.id === 'finance' ? `
+        <div class="accounting-reveal ${sel.has('accounting') ? 'visible' : ''}" id="accounting-software-wrap">
+          <label>¿Tienes un software contable actual o deseas integrar con alguno?</label>
+          <select id="accounting_software" onchange="clinicData.accountingSoftware=this.value">
+            ${['','QuickBooks','Xero','Odoo','SAP','Peachtree / Sage 50','Zoho Books','Botonapp','Otro'].map(s=>`<option value="${s}" ${(clinicData.accountingSoftware===s)?'selected':''}>${s||'— Seleccionar software —'}</option>`).join('')}
+          </select>
+          <p class="hint">Esta información nos ayuda a planificar la integración con tu sistema actual.</p>
+        </div>` : ''}
       ${cat.id === 'comms' ? `
       <div class="mod-card coming-soon">
         <span class="mod-icon">
@@ -1093,6 +1142,14 @@ function toggleMod(catId, code, total) {
   else               { sel.add(code);    card.classList.add('on');    cb.checked = true;  }
   document.getElementById('selN').textContent = sel.size;
   document.getElementById('toggleAllBtn').textContent = sel.size === total ? 'Deseleccionar todos' : 'Seleccionar todos';
+  // Show/hide accounting software selector
+  if (code === 'accounting') {
+    const wrap = document.getElementById('accounting-software-wrap');
+    if (wrap) {
+      if (sel.has('accounting')) { wrap.classList.add('visible'); }
+      else { wrap.classList.remove('visible'); clinicData.accountingSoftware = ''; }
+    }
+  }
 }
 
 function toggleAll(catId, total) {
@@ -1204,6 +1261,7 @@ async function submitQuote() {
     total_staff: clinicData.clinics ? clinicData.clinics.reduce((a,c)=>a+c.total,0) : 0,
     modules: Object.fromEntries(CAT_STEPS.map(c => [c.id, [...selected[c.id]]])),
     total_modules: totalMods,
+    accounting_software: clinicData.accountingSoftware || null,
   };
 
   const btn = document.querySelector('.nav .btn-next');
