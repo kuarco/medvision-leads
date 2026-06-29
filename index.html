@@ -1217,11 +1217,19 @@ function renderCat(container, cat) {
         </div>`).join('')}
       ${cat.id === 'finance' ? `
         <div class="accounting-reveal ${sel.has('accounting') ? 'visible' : ''}" id="accounting-software-wrap">
-          <label>¿Tienes un software contable actual o deseas integrar con alguno?</label>
-          <select id="accounting_software" onchange="clinicData.accountingSoftware=this.value">
-            ${['','QuickBooks','Xero','Odoo','SAP','Peachtree / Sage 50','Zoho Books','Botonapp','Otro'].map(s=>`<option value="${s}" ${(clinicData.accountingSoftware===s)?'selected':''}>${s||'— Seleccionar software —'}</option>`).join('')}
-          </select>
-          <p class="hint">Esta información nos ayuda a planificar la integración con tu sistema actual.</p>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span style="font-size:12px;font-weight:700;color:var(--text);">Integraciones con sistemas ERP y contables</span>
+            <span class="mod-info-btn" style="display:inline-flex;position:static;width:18px;height:18px;line-height:15px;flex-shrink:0;" onclick="event.stopPropagation();showErpTooltip(this)">i</span>
+            <div class="mod-tooltip" style="top:auto;bottom:auto;left:auto;transform:none;position:absolute;margin-top:4px;" id="erp-tooltip">
+              Conecta MedVision con tu sistema contable o ERP actual. Los asientos, facturas y gastos se sincronizan automáticamente, eliminando la doble entrada de datos y errores manuales.
+            </div>
+          </div>
+          <div class="specialty-chips">
+            ${['QuickBooks','Xero','Odoo','SAP','Peachtree / Sage 50','Zoho Books','Botonapp','Otro'].map(s => `
+              <span class="specialty-chip ${(clinicData.accountingSoftware===s)?'on':''}"
+                onclick="toggleAccountingSoftware('${s}')">${s}</span>`).join('')}
+          </div>
+          <p class="hint">Selecciona el sistema con el que deseas integrar. Si no tienes uno, puedes omitir este paso.</p>
         </div>` : ''}
       ${cat.id === 'comms' ? `
       <div class="mod-card coming-soon">
@@ -1261,6 +1269,32 @@ function toggleMod(catId, code, total) {
     if (sel.size > 0) { clinicalWrap.classList.add('visible'); }
     else { clinicalWrap.classList.remove('visible'); clinicData.clinicalSpecialties = []; }
   }
+}
+
+function toggleAccountingSoftware(name) {
+  clinicData.accountingSoftware = (clinicData.accountingSoftware === name) ? '' : name;
+  document.querySelectorAll('#accounting-software-wrap .specialty-chip').forEach(chip => {
+    chip.classList.toggle('on', chip.textContent.trim() === clinicData.accountingSoftware);
+  });
+}
+
+let _erpTooltipVisible = false;
+function showErpTooltip(btn) {
+  const tip = document.getElementById('erp-tooltip');
+  if (!tip) return;
+  _erpTooltipVisible = !_erpTooltipVisible;
+  tip.style.display = _erpTooltipVisible ? 'block' : 'none';
+  if (_erpTooltipVisible) {
+    const rect = btn.getBoundingClientRect();
+    tip.style.top = (btn.offsetTop + 24) + 'px';
+    tip.style.left = '0';
+    document.addEventListener('click', hideErpTooltip, { once: true });
+  }
+}
+function hideErpTooltip() {
+  const tip = document.getElementById('erp-tooltip');
+  if (tip) tip.style.display = 'none';
+  _erpTooltipVisible = false;
 }
 
 function toggleClinicalSpecialty(name) {
