@@ -473,6 +473,38 @@
     .staff-total-row.warn strong { color: #d9534f; }
     .clinic-name-full { grid-column: 1 / -1; }
 
+    /* ─── Tooltip ───────────────────────────────────────────────────────── */
+    .mod-card { position: relative; }
+    .mod-tooltip {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 220px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 10px 13px;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 4px 16px rgba(84,80,76,.22);
+      z-index: 100;
+      pointer-events: none;
+      white-space: normal;
+    }
+    .mod-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: var(--accent);
+    }
+    .mod-card:hover .mod-tooltip { display: block; }
+    @media (hover: none) { .mod-tooltip { display: none !important; } }
+
     /* ─── Coming soon module card ─── */
     .mod-card.coming-soon {
       opacity: 0.62;
@@ -640,14 +672,14 @@ const CAT_STEPS = [
     title:'Atención al paciente',
     sub:'Todo lo relacionado con el seguimiento y gestión de pacientes.',
     modules:[
-      {code:'patients',        name:'Gestión de pacientes',    desc:'Registro y administración',         icon:''},
-      {code:'appointments',    name:'Agenda de citas',          desc:'Calendario y citas médicas',        icon:''},
-      {code:'medical_records', name:'Historias clínicas',       desc:'Expedientes médicos electrónicos',  icon:''},
-      {code:'prescriptions',   name:'Recetas médicas',          desc:'Prescripciones y medicamentos',     icon:''},
-      {code:'test_reports',    name:'Reportes de laboratorio',  desc:'Exámenes y resultados',             icon:''},
-      {code:'leads',           name:'Gestión de leads',         desc:'Captación de prospectos',           icon:''},
-      {code:'telemedicine',    name:'Telemedicina',             desc:'Consultas por videollamada',        icon:''},
-      {code:'patient_followup',name:'Seguimiento con IA',       desc:'Seguimiento inteligente',           icon:''},
+      {code:'patients',        name:'Gestión de pacientes',    desc:'Registro y administración',         icon:'', tooltip:'Gestiona expedientes completos de pacientes: datos personales, historial médico, alergias, documentos y fotos. Busca y filtra pacientes en segundos.'},
+      {code:'appointments',    name:'Agenda de citas',          desc:'Calendario y citas médicas',        icon:'', tooltip:'Calendario visual con disponibilidad en tiempo real. Agenda, reagenda y cancela citas. Envía recordatorios automáticos a pacientes por email o WhatsApp.'},
+      {code:'medical_records', name:'Historias clínicas',       desc:'Expedientes médicos electrónicos',  icon:'', tooltip:'Expedientes médicos electrónicos con consultas, diagnósticos CIE-10, signos vitales, antecedentes y evoluciones. Acceso rápido desde cualquier dispositivo.'},
+      {code:'prescriptions',   name:'Recetas médicas',          desc:'Prescripciones y medicamentos',     icon:'', tooltip:'Genera recetas médicas digitales con firma del doctor. Historial de prescripciones por paciente. Envío directo al paciente por correo o impresión.'},
+      {code:'test_reports',    name:'Reportes de laboratorio',  desc:'Exámenes y resultados',             icon:'', tooltip:'Adjunta y gestiona resultados de laboratorio y estudios diagnósticos. Vincula los resultados directamente al expediente del paciente para seguimiento.'},
+      {code:'leads',           name:'Gestión de leads',         desc:'Captación de prospectos',           icon:'', tooltip:'Registra y organiza prospectos interesados en tus servicios. Lleva un seguimiento del embudo de ventas, asigna responsables y convierte leads en pacientes.'},
+      {code:'telemedicine',    name:'Telemedicina',             desc:'Consultas por videollamada',        icon:'', tooltip:'Realiza consultas médicas por videollamada de alta calidad. Incluye chat en tiempo real, grabación de sesiones y compartición de pantalla con el paciente.'},
+      {code:'patient_followup',name:'Seguimiento con IA',       desc:'Seguimiento inteligente',           icon:'', tooltip:'Sistema de seguimiento post-consulta con IA. Realiza llamadas, WhatsApp y SMS automáticos para monitorear la evolución del paciente y detectar señales de alerta.'},
     ]
   },
   {
@@ -655,9 +687,9 @@ const CAT_STEPS = [
     title:'Clínico especializado',
     sub:'Herramientas para especialidades médicas específicas.',
     modules:[
-      {code:'odontogram',          name:'Odontograma',         desc:'Carta dental e historial odontológico', icon:''},
-      {code:'aesthetic_simulator', name:'Simulador estético',  desc:'Simulación de procedimientos',          icon:''},
-      {code:'room_management',     name:'Gestión de salas',    desc:'Asignación y control de salas',         icon:''},
+      {code:'odontogram',          name:'Odontograma',         desc:'Carta dental e historial odontológico', icon:'', tooltip:'Carta dental interactiva con registro por diente, historial odontológico, periograma, diagnósticos CIE-10, planes de tratamiento y consentimientos informados.'},
+      {code:'aesthetic_simulator', name:'Simulador estético',  desc:'Simulación de procedimientos',          icon:'', tooltip:'Simula procedimientos estéticos sobre fotografías del paciente con IA. Muestra resultados antes y después para apoyar la toma de decisiones clínicas.'},
+      {code:'room_management',     name:'Gestión de salas',    desc:'Asignación y control de salas',         icon:'', tooltip:'Reserva y controla la disponibilidad de consultorios, quirófanos y salas de procedimientos. Evita conflictos de horario y optimiza el uso del espacio.'},
     ]
   },
   {
@@ -665,9 +697,9 @@ const CAT_STEPS = [
     title:'Inteligencia artificial',
     sub:'Módulos impulsados por IA para automatizar y optimizar.',
     modules:[
-      {code:'ai_assistant',          name:'Asistente IA',          desc:'Asistente inteligente para el equipo', icon:''},
-      {code:'consultation_recorder', name:'Grabador de consultas', desc:'Transcripción automática',             icon:''},
-      {code:'medgemma',              name:'Diagnóstico con IA',    desc:'Análisis de radiografías y síntomas clínicos con MedGemma (Google)', icon:''},
+      {code:'ai_assistant',          name:'Asistente IA',          desc:'Asistente inteligente para el equipo', icon:'', tooltip:'Asistente virtual con IA para el equipo médico. Responde preguntas clínicas, ayuda a redactar notas, resume historias clínicas y agiliza tareas administrativas.'},
+      {code:'consultation_recorder', name:'Grabador de consultas', desc:'Transcripción automática',             icon:'', tooltip:'Graba consultas médicas y las transcribe automáticamente con IA. Genera resúmenes de la consulta, extrae diagnósticos y los vincula al expediente del paciente.'},
+      {code:'medgemma',              name:'Diagnóstico con IA',    desc:'Análisis de radiografías y síntomas clínicos con MedGemma (Google)', icon:'', tooltip:'Análisis de imágenes radiológicas y síntomas clínicos con MedGemma de Google. Obtén un segundo criterio diagnóstico impulsado por uno de los modelos médicos más avanzados del mundo.'},
     ]
   },
   {
@@ -675,16 +707,16 @@ const CAT_STEPS = [
     title:'Finanzas',
     sub:'Todo el manejo financiero de tu clínica.',
     modules:[
-      {code:'billing',           name:'Facturación',          desc:'Cobros y facturas',                    icon:''},
-      {code:'accounting',        name:'Contabilidad',         desc:'Partida doble y reportes financieros', icon:''},
-      {code:'expenses',          name:'Gastos',               desc:'Control de gastos operativos',         icon:''},
-      {code:'commissions',       name:'Comisiones',           desc:'Comisiones del personal',              icon:''},
-      {code:'payroll',           name:'Nómina',               desc:'Pagos al personal',                    icon:''},
-      {code:'credit_notes',      name:'Notas de crédito',     desc:'Contra facturas emitidas',             icon:''},
-      {code:'patient_wallet',    name:'Wallet del paciente',  desc:'Saldo a favor y depósitos',            icon:''},
-      {code:'fixed_assets',      name:'Activos fijos',        desc:'Equipos y mobiliario',                 icon:''},
-      {code:'insurance_claims',  name:'Reclamos de seguro',   desc:'CxC aseguradoras',                     icon:''},
-      {code:'electronic_invoice',name:'Factura electrónica',  desc:'FE ante autoridades fiscales',         icon:''},
+      {code:'billing',           name:'Facturación',          desc:'Cobros y facturas',                    icon:'', tooltip:'Genera y gestiona facturas de pacientes con múltiples métodos de pago. Lleva el control de cobros pendientes, pagos parciales y estados de cuenta.'},
+      {code:'accounting',        name:'Contabilidad',         desc:'Partida doble y reportes financieros', icon:'', tooltip:'Contabilidad de partida doble con plan de cuentas personalizable. Asientos automáticos desde facturas y gastos. Reportes financieros: balance, estado de resultados y más.'},
+      {code:'expenses',          name:'Gastos',               desc:'Control de gastos operativos',         icon:'', tooltip:'Registra y categoriza los gastos operativos de la clínica. Adjunta comprobantes, asigna centros de costo y genera reportes de gasto por período o área.'},
+      {code:'commissions',       name:'Comisiones',           desc:'Comisiones del personal',              icon:'', tooltip:'Calcula automáticamente comisiones para médicos y personal de ventas basadas en servicios prestados o metas. Liquida comisiones con un clic.'},
+      {code:'payroll',           name:'Nómina',               desc:'Pagos al personal',                    icon:'', tooltip:'Gestiona la nómina de todo el personal de la clínica. Calcula salarios, deducciones, bonos y genera los recibos de pago de forma automática cada período.'},
+      {code:'credit_notes',      name:'Notas de crédito',     desc:'Contra facturas emitidas',             icon:'', tooltip:'Emite notas de crédito contra facturas existentes para correcciones o devoluciones. El saldo puede acreditarse al wallet del paciente o aplicarse en futuras facturas.'},
+      {code:'patient_wallet',    name:'Wallet del paciente',  desc:'Saldo a favor y depósitos',            icon:'', tooltip:'Administra el saldo a favor de cada paciente. Acepta depósitos anticipados y aplícalos en futuras facturas, agilizando el proceso de cobro en cada visita.'},
+      {code:'fixed_assets',      name:'Activos fijos',        desc:'Equipos y mobiliario',                 icon:'', tooltip:'Registra y controla los activos fijos de la clínica: equipos médicos, mobiliario y tecnología. Lleva el control de depreciación con integración contable automática.'},
+      {code:'insurance_claims',  name:'Reclamos de seguro',   desc:'CxC aseguradoras',                     icon:'', tooltip:'Gestiona reclamos ante aseguradoras médicas. Controla copagos, cuentas por cobrar con aseguradoras y da seguimiento al estado de cada reclamación.'},
+      {code:'electronic_invoice',name:'Factura electrónica',  desc:'FE ante autoridades fiscales',         icon:'', tooltip:'Emite facturas electrónicas válidas ante las autoridades fiscales de tu país. Cumple con las normativas locales de facturación electrónica de forma automática.'},
     ]
   },
   {
@@ -692,12 +724,12 @@ const CAT_STEPS = [
     title:'Operaciones',
     sub:'Gestión interna del equipo y recursos.',
     modules:[
-      {code:'staff',       name:'Personal',              desc:'Gestión de empleados',         icon:''},
-      {code:'training',    name:'Capacitación',          desc:'Rutas de aprendizaje por rol', icon:''},
-      {code:'services',    name:'Catálogo de servicios', desc:'Servicios y procedimientos',   icon:''},
-      {code:'departments', name:'Departamentos',         desc:'Organización por áreas',        icon:''},
-      {code:'lab_vendors', name:'Proveedores de lab',    desc:'Laboratorios externos',         icon:''},
-      {code:'tasks',       name:'Gestión de tareas',     desc:'Tablero Kanban del equipo',     icon:''},
+      {code:'staff',       name:'Personal',              desc:'Gestión de empleados',         icon:'', tooltip:'Gestiona el personal de la clínica: médicos, enfermeras y administrativos. Controla roles, permisos de acceso, horarios y datos laborales de cada colaborador.'},
+      {code:'training',    name:'Capacitación',          desc:'Rutas de aprendizaje por rol', icon:'', tooltip:'Crea rutas de aprendizaje personalizadas por rol. Asigna lecciones, evalúa el progreso del equipo y asegura que todo el personal esté capacitado en los procesos de la clínica.'},
+      {code:'services',    name:'Catálogo de servicios', desc:'Servicios y procedimientos',   icon:'', tooltip:'Define el catálogo completo de servicios y procedimientos médicos con precios, duración estimada y médicos autorizados. Úsalo como base para facturación y agenda.'},
+      {code:'departments', name:'Departamentos',         desc:'Organización por áreas',        icon:'', tooltip:'Organiza la clínica por departamentos o especialidades. Asigna personal, servicios y métricas por área para una gestión más clara y ordenada.'},
+      {code:'lab_vendors', name:'Proveedores de lab',    desc:'Laboratorios externos',         icon:'', tooltip:'Gestiona los laboratorios externos con los que trabaja tu clínica. Envía órdenes de pruebas, da seguimiento a resultados y mantén un directorio actualizado de proveedores.'},
+      {code:'tasks',       name:'Gestión de tareas',     desc:'Tablero Kanban del equipo',     icon:'', tooltip:'Tablero Kanban para asignar y dar seguimiento a tareas del equipo. Organiza pendientes, en progreso y completados. Ideal para coordinar el trabajo administrativo y clínico.'},
     ]
   },
   {
@@ -705,9 +737,9 @@ const CAT_STEPS = [
     title:'Inventario y compras',
     sub:'Control de insumos, proveedores y órdenes.',
     modules:[
-      {code:'inventory',       name:'Inventario',         desc:'Control de stock e insumos',   icon:''},
-      {code:'suppliers',       name:'Proveedores',        desc:'Gestión de proveedores',       icon:''},
-      {code:'purchase_orders', name:'Órdenes de compra',  desc:'Solicitudes y aprobaciones',   icon:''},
+      {code:'inventory',       name:'Inventario',         desc:'Control de stock e insumos',   icon:'', tooltip:'Control de stock de medicamentos, insumos y materiales médicos. Configura alertas de stock mínimo, lleva el historial de movimientos y evita quiebres de inventario.'},
+      {code:'suppliers',       name:'Proveedores',        desc:'Gestión de proveedores',       icon:'', tooltip:'Directorio de proveedores de la clínica con contactos, condiciones de pago y catálogo de productos. Compara precios y mantén relaciones comerciales organizadas.'},
+      {code:'purchase_orders', name:'Órdenes de compra',  desc:'Solicitudes y aprobaciones',   icon:'', tooltip:'Crea y gestiona órdenes de compra para reabastecer inventario. Lleva el flujo de aprobaciones, da seguimiento a entregas y registra las facturas de proveedores.'},
     ]
   },
   {
@@ -715,9 +747,9 @@ const CAT_STEPS = [
     title:'Analítica',
     sub:'Métricas, reportes y KPIs de la clínica.',
     modules:[
-      {code:'performance',      name:'Rendimiento',       desc:'KPIs del equipo médico',           icon:''},
-      {code:'reports',          name:'Reportes',          desc:'Reportes avanzados exportables',   icon:''},
-      {code:'advanced_metrics', name:'Métricas avanzadas',desc:'Dashboard ejecutivo integral',     icon:''},
+      {code:'performance',      name:'Rendimiento',       desc:'KPIs del equipo médico',           icon:'', tooltip:'Mide el desempeño de médicos y personal con KPIs clave: consultas atendidas, ingresos generados, puntualidad y satisfacción de pacientes. Toma decisiones basadas en datos.'},
+      {code:'reports',          name:'Reportes',          desc:'Reportes avanzados exportables',   icon:'', tooltip:'Genera reportes avanzados de operaciones clínicas y financieras. Exporta a Excel o PDF. Citas, ingresos, pacientes nuevos, ocupación de agenda y mucho más.'},
+      {code:'advanced_metrics', name:'Métricas avanzadas',desc:'Dashboard ejecutivo integral',     icon:'', tooltip:'Dashboard ejecutivo con visión integral de la clínica: finanzas, pacientes, operaciones y equipo en un solo lugar. Visualizaciones interactivas para decisiones estratégicas.'},
     ]
   },
   {
@@ -725,7 +757,7 @@ const CAT_STEPS = [
     title:'Comunicaciones',
     sub:'Canales de comunicación con pacientes y equipo.',
     modules:[
-      {code:'messaging', name:'Email con IA',          desc:'Bandeja inteligente, respuestas automáticas y seguimiento por correo', icon:''},
+      {code:'messaging', name:'Email con IA',          desc:'Bandeja inteligente, respuestas automáticas y seguimiento por correo', icon:'', tooltip:'Bandeja de correo inteligente con IA integrada. Responde emails automáticamente, clasifica mensajes, hace seguimiento de conversaciones y mantiene comunicación fluida con pacientes.'},
     ]
   },
   {
@@ -733,7 +765,7 @@ const CAT_STEPS = [
     title:'Automatización',
     sub:'Flujos y procesos automáticos para tu clínica.',
     modules:[
-      {code:'workflows', name:'Workflows', desc:'Automatización de procesos clínicos', icon:''},
+      {code:'workflows', name:'Workflows', desc:'Automatización de procesos clínicos', icon:'', tooltip:'Crea flujos de trabajo visuales para automatizar procesos repetitivos: recordatorios de citas, seguimientos post-consulta, alertas de inventario y mucho más, sin código.'},
     ]
   },
 ];
@@ -1031,6 +1063,7 @@ function renderCat(container, cat) {
     <div class="mod-grid" id="modGrid">
       ${cat.modules.map(m => `
         <div class="mod-card ${sel.has(m.code)?'on':''}" onclick="toggleMod('${cat.id}','${m.code}',${total})" data-code="${m.code}">
+          ${m.tooltip ? `<div class="mod-tooltip">${m.tooltip}</div>` : ''}
           <input type="checkbox" ${sel.has(m.code)?'checked':''} onclick="event.stopPropagation();toggleMod('${cat.id}','${m.code}',${total})">
           <span class="mod-icon">${ICONS[m.code] || ''}</span>
           <div class="mod-name">${m.name}</div>
