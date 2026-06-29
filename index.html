@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MedVision AI — Cotizador</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── MedVision Brand Palette ───────────────────────────────────────────
+       Primary:   Charcoal #54504C · Pale Oak #CEC5B7 · Alabaster #E5E4E3 · White Smoke #F2F2F2
+       Secondary: Jasmine #F4E07A · Coffee Bean #66482D · Sunlit Clay #FCC377 · Willow Green #B3D389
+    ─────────────────────────────────────────────────────────────────────── */
+    :root {
+      --bg:              #F2F2F2;        /* White Smoke — page background     */
+      --surface:         #FFFFFF;        /* Pure white cards                  */
+      --border:          #E5E4E3;        /* Alabaster Grey — borders          */
+      --text:            #54504C;        /* Charcoal — primary text           */
+      --muted:           #8A857F;        /* Charcoal 60% — secondary text     */
+      --hint:            #CEC5B7;        /* Pale Oak — placeholders           */
+
+      --accent:          #54504C;        /* Charcoal — primary actions        */
+      --accent-hover:    #3A3632;        /* Charcoal dark — hover             */
+      --accent-light:    #F7F5F2;        /* Pale Oak tinted — selected bg     */
+      --accent-border:   #CEC5B7;        /* Pale Oak — selected border        */
+
+      --highlight:       #F4E07A;        /* Jasmine — progress fill & badges  */
+      --highlight-text:  #66482D;        /* Coffee Bean — text on jasmine     */
+      --green:           #B3D389;        /* Willow Green — success states     */
+      --warm:            #FCC377;        /* Sunlit Clay — warm accents        */
+
+      --radius:          12px;
+      --radius-sm:       8px;
+      --shadow:          0 2px 16px rgba(84,80,76,.10);
+      --shadow-card:     0 4px 24px rgba(84,80,76,.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 100px;
+    }
+
+    /* ─── Shell ─────────────────────────────────────────────────────────── */
+    .shell { width: 100%; max-width: 700px; }
+
+    /* ─── Header band ───────────────────────────────────────────────────── */
+    .header-band {
+      background: var(--text);           /* Charcoal */
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 20px 28px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0;
+    }
+    .brand-logo svg {
+      height: 38px;
+      width: auto;
+      display: block;
+    }
+    .header-tagline {
+      font-size: 12px;
+      color: var(--hint);
+      letter-spacing: .05em;
+      text-align: right;
+      line-height: 1.4;
+    }
+
+    /* ─── Progress ──────────────────────────────────────────────────────── */
+    .progress-wrap {
+      background: var(--accent);
+      padding: 12px 28px 14px;
+      margin-bottom: 24px;
+      border-radius: 0 0 var(--radius) var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--hint);
+      margin-bottom: 8px;
+      font-weight: 500;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .progress-track {
+      height: 4px;
+      background: rgba(255,255,255,.15);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--highlight);      /* Jasmine */
+      border-radius: 99px;
+      transition: width .4s ease;
+    }
+
+    /* ─── Card ──────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+    }
+    .card-eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--warm);                /* Sunlit Clay */
+      margin-bottom: 6px;
+    }
+    .card-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      line-height: 1.25;
+    }
+    .card-sub {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.55;
+    }
+
+    /* ─── Form fields ────────────────────────────────────────────────────── */
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .field-full { grid-column: 1 / -1; }
+    @media (max-width: 520px) { .field-grid { grid-template-columns: 1fr; } }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .field label .req { color: #d9534f; margin-left: 2px; }
+    .field input,
+    .field select {
+      padding: 10px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--text);
+      background: var(--surface);
+      transition: border-color .15s, box-shadow .15s;
+      width: 100%;
+    }
+    .field input::placeholder { color: var(--hint); }
+    .field input:focus,
+    .field select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(84,80,76,.12);
+    }
+    .field input.err,
+    .field select.err { border-color: #d9534f; }
+    .field .err-msg { font-size: 11px; color: #d9534f; display: none; }
+    .field.has-err .err-msg { display: block; }
+
+    /* ─── Module grid ────────────────────────────────────────────────────── */
+    .mod-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(188px, 1fr));
+      gap: 10px;
+    }
+    .mod-card {
+      position: relative;
+      padding: 14px 14px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      background: var(--surface);
+      transition: border-color .15s, background .15s, box-shadow .15s;
+      user-select: none;
+    }
+    .mod-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px rgba(84,80,76,.10);
+    }
+    .mod-card.on {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    .mod-card.on::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--highlight);      /* Jasmine top stripe when selected */
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    }
+    .mod-card input[type="checkbox"] {
+      position: absolute; top: 12px; right: 12px;
+      width: 15px; height: 15px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .mod-icon { font-size: 22px; display: block; margin-bottom: 8px; }
+    .mod-name { font-size: 13px; font-weight: 600; padding-right: 20px; line-height: 1.3; color: var(--text); }
+    .mod-desc { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+
+    /* ─── Select-all bar ─────────────────────────────────────────────────── */
+    .sel-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+      padding: 10px 14px;
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--radius-sm);
+    }
+    .sel-bar-count { font-size: 13px; color: var(--muted); }
+    .sel-bar-count strong { color: var(--text); }
+    .toggle-all {
+      font-size: 12px;
+      color: var(--accent);
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 0;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    /* ─── Nav buttons ────────────────────────────────────────────────────── */
+    .nav {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 28px; gap: 12px;
+    }
+    .btn-back {
+      padding: 11px 22px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    .btn-back:hover {
+      background: var(--bg);
+      border-color: var(--accent);
+      color: var(--text);
+    }
+    .btn-next {
+      flex: 1;
+      padding: 12px;
+      background: var(--accent);        /* Charcoal */
+      color: var(--highlight);          /* Jasmine text on charcoal */
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+    }
+    .btn-next:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+    .btn-next:active { transform: translateY(0); }
+
+    /* ─── Summary ────────────────────────────────────────────────────────── */
+    .summary-section { margin-bottom: 20px; }
+    .summary-cat {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--hint);
+      margin-bottom: 10px;
+    }
+    .summary-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 11px;
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .summary-clinic-row {
+      display: flex; justify-content: space-between;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .summary-clinic-row:last-child { border-bottom: none; }
+    .summary-clinic-row span:first-child { color: var(--muted); }
+    .summary-clinic-row span:last-child { font-weight: 600; color: var(--text); }
+
+    /* ─── Total badge ────────────────────────────────────────────────────── */
+    .total-badge {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--accent);
+      border-radius: var(--radius-sm);
+      padding: 16px 20px;
+      margin-top: 24px;
+    }
+    .total-badge-label { font-size: 13px; color: var(--hint); font-weight: 500; }
+    .total-badge-count { font-size: 24px; font-weight: 800; color: var(--highlight); }
+
+    /* ─── Finish screen ──────────────────────────────────────────────────── */
+    .finish {
+      text-align: center;
+      padding: 48px 24px;
+    }
+    .finish-icon { font-size: 52px; margin-bottom: 20px; display: block; }
+    .finish h2 { font-size: 24px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+    .finish p {
+      font-size: 14px; color: var(--muted);
+      max-width: 420px; margin: 0 auto 28px;
+      line-height: 1.65;
+    }
+    .finish-pill {
+      display: inline-block;
+      background: var(--green);
+      color: #3a5c1a;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 14px;
+      border-radius: 99px;
+      margin-bottom: 20px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    /* ─── Divider ────────────────────────────────────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 20px 0;
+    }
+
+    /* ─── Module card icon ─── */
+    .mod-icon {
+      display: block;
+      width: 28px;
+      height: 28px;
+      margin-bottom: 10px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .mod-card.on .mod-icon { color: var(--accent); }
+    .mod-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ─── Multi-clinic section ─── */
+    .clinics-section {
+      margin-top: 24px;
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+    }
+    .clinics-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .clinics-header label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .clinics-count-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .clinics-count-row select {
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--text);
+      background: var(--surface);
+      width: 100%;
+      transition: border-color .15s;
+    }
+    .clinics-count-row select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(84,80,76,.12);
+    }
+    .clinic-block {
+      background: var(--accent-light);
+      border: 1.5px solid var(--accent-border);
+      border-radius: var(--radius-sm);
+      padding: 16px 18px;
+      margin-bottom: 12px;
+    }
+    .clinic-block-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .clinic-block-title svg {
+      width: 14px; height: 14px;
+      stroke: var(--accent);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+    .clinic-block-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 480px) { .clinic-block-grid { grid-template-columns: 1fr; } }
+    .clinic-block-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .clinic-block-field label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .clinic-block-field input {
+      padding: 8px 11px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--text);
+      background: var(--surface);
+      width: 100%;
+      transition: border-color .15s;
+    }
+    .clinic-block-field input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(84,80,76,.12);
+    }
+    .clinic-block-field input.err { border-color: #d9534f; }
+    .staff-breakdown {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding-top: 4px;
+    }
+    .staff-total-row {
+      grid-column: 1 / -1;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: right;
+      padding-top: 2px;
+    }
+    .staff-total-row strong { color: var(--text); }
+    .staff-total-row.warn strong { color: #d9534f; }
+    .clinic-name-full { grid-column: 1 / -1; }
+
+    /* ─── Coming soon module card ─── */
+    .mod-card.coming-soon {
+      opacity: 0.62;
+      cursor: not-allowed;
+      pointer-events: none;
+      position: relative;
+    }
+    .mod-card.coming-soon::before {
+      content: 'Próximamente';
+      position: absolute;
+      top: 8px; right: 8px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      background: var(--warm);
+      color: var(--highlight-text, #66482d);
+      padding: 2px 7px;
+      border-radius: 99px;
+      z-index: 2;
+    }
+    .mod-card.coming-soon .mod-name { color: var(--muted); }
+
+    /* ─── "Otra especialidad" reveal field ─── */
+    .field-reveal {
+      grid-column: 1 / -1;
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height .3s ease, opacity .25s ease, margin-top .25s ease;
+      margin-top: 0;
+    }
+    .field-reveal.visible {
+      max-height: 80px;
+      opacity: 1;
+      margin-top: 0;
+    }
+
+    /* ─── Clinic block field error state ─── */
+    .clinic-block-field input.blk-err {
+      border-color: #d9534f;
+    }
+    .blk-err-msg {
+      font-size: 11px;
+      color: #d9534f;
+      margin-top: 3px;
+      display: none;
+    }
+    .clinic-block-field.has-blk-err .blk-err-msg { display: block; }
+    .clinic-block-field.has-blk-err input { border-color: #d9534f; }
+    .clinic-block.has-block-err {
+      border-color: #d9534f;
+    }
+
+    /* ─── "Otro país" reveal (inline, same row width) ─── */
+    .otro-pais-wrap {
+      display: none;
+      margin-top: 10px;
+    }
+    .otro-pais-wrap.visible { display: block; }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── Header band with logo ── -->
+  <div class="header-band">
+    <div class="brand-logo"><svg id="Layer_1" style="height:38px;width:auto;display:block;" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 650 260.9">
+  <defs>
+    <style>
+      .st0 {
+        fill: #ffffff;
+      }
+    </style>
+  </defs>
+  <g>
+    <path class="st0" d="M90.9,245.5v-22.1h4.1l13.4,18.1,13.2-18.1h4.1v22.1h-2.8v-19.6l-13.2,18.2h-2.5l-13.6-18.2v19.6h-2.8Z"/>
+    <path class="st0" d="M148.7,245.5v-22.1h21.7v2.3h-19v7.4h18.2v2.3h-18.2v7.8h19.4v2.3h-22.1Z"/>
+    <path class="st0" d="M192,245.5v-22.1h16.4c2.2,0,3.9.1,5.3.4,1.4.3,2.5.8,3.3,1.5.8.7,1.3,1.8,1.6,3.3.3,1.4.5,3.3.5,5.6v.6c0,2.3-.2,4.1-.5,5.5-.3,1.4-.9,2.5-1.6,3.3-.8.8-1.9,1.3-3.3,1.6-1.4.3-3.2.4-5.3.4h-16.4ZM194.8,243.1h13.7c1.7,0,3.1,0,4.2-.2,1-.2,1.8-.5,2.4-1.1.5-.5.9-1.4,1.1-2.5.2-1.1.3-2.6.3-4.6v-.6c0-1.6,0-2.9-.2-4-.1-1-.3-1.9-.6-2.5s-.8-1-1.4-1.3c-.6-.3-1.4-.5-2.3-.5-.9,0-2.1-.1-3.5-.1h-13.7v17.4Z"/>
+    <path class="st0" d="M247.6,245.5l-11.9-22.1h3.2l10.6,20.2,10.6-20.2h3.1l-11.9,22.1h-3.7Z"/>
+    <path class="st0" d="M284.4,245.5v-22.1h2.8v22.1h-2.8Z"/>
+    <path class="st0" d="M333.7,239.1c0-.9,0-1.5-.2-2-.1-.5-.4-.9-.9-1.1-.5-.2-1.2-.4-2.2-.5-1,0-2.3-.1-4.1-.2h-8c-2-.1-3.6-.3-4.8-.5-1.2-.2-2.1-.5-2.7-1-.6-.5-1-1.1-1.2-1.8-.2-.8-.3-1.7-.3-2.9s.1-2.3.4-3.1c.3-.8.8-1.5,1.5-1.9.7-.5,1.8-.8,3.2-1,1.4-.2,3.1-.3,5.3-.3h6.2c2,0,3.6,0,4.9.2,1.3.1,2.3.4,3.1.9.8.5,1.3,1.2,1.7,2.1.3,1,.5,2.3.5,3.9h-2.8c0-1.3-.1-2.3-.4-2.9-.2-.7-.6-1.1-1.2-1.3-.6-.2-1.3-.4-2.3-.4-1,0-2.1,0-3.5,0h-6c-1.7,0-3.1,0-4.1.1-1,0-1.8.2-2.3.5s-.9.6-1.1,1.2c-.2.5-.3,1.3-.3,2.2s0,1.4.2,1.9c.1.5.4.8.8,1.1.4.2,1.1.4,2,.5.9,0,2.2.1,3.7.2h8.6c2,.1,3.6.3,4.8.5,1.2.2,2.1.5,2.7,1s1,1.1,1.2,1.9c.2.8.3,1.8.3,3s-.1,2.4-.4,3.3-.7,1.6-1.4,2.1c-.7.5-1.7.9-3,1.1-1.3.2-3.1.3-5.2.3h-6.7c-2,0-3.6,0-5-.3s-2.4-.5-3.2-1c-.8-.5-1.4-1.3-1.7-2.3-.3-1-.5-2.4-.5-4.2h2.8c0,1.4.1,2.4.3,3.1.2.7.6,1.3,1.2,1.6.6.3,1.3.5,2.3.6,1,0,2.3,0,3.8,0h6.6c1.7,0,3.1,0,4.1-.2,1-.1,1.7-.3,2.2-.6.5-.3.8-.8.9-1.3s.2-1.4.2-2.3Z"/>
+    <path class="st0" d="M358.5,245.5v-22.1h2.8v22.1h-2.8Z"/>
+    <path class="st0" d="M394,246c-2.2,0-3.9-.1-5.3-.4s-2.5-.8-3.3-1.6c-.8-.8-1.3-1.9-1.6-3.4s-.5-3.4-.5-5.8v-.6c0-2,0-3.6.3-4.9.2-1.3.5-2.4,1-3.3.5-.8,1.1-1.5,1.9-1.9.8-.4,1.8-.7,3.1-.9,1.2-.2,2.7-.2,4.4-.2h5.8c1.7,0,3.2,0,4.4.2,1.2.2,2.3.5,3.1.9.8.4,1.5,1.1,1.9,1.9.5.8.8,1.9,1,3.3.2,1.3.3,3,.3,4.9v.6c0,2.4-.2,4.3-.5,5.8s-.9,2.6-1.6,3.4c-.8.8-1.9,1.3-3.3,1.6-1.4.3-3.2.4-5.3.4h-5.8ZM394,243.6h5.8c1.4,0,2.5,0,3.5-.1.9,0,1.7-.3,2.3-.6.6-.3,1-.8,1.4-1.4s.5-1.5.6-2.6c.1-1.1.2-2.4.2-4.1v-.6c0-1.7,0-3.1-.2-4.2s-.3-2-.6-2.6c-.3-.6-.8-1.1-1.4-1.4-.6-.3-1.4-.5-2.3-.6-.9,0-2.1-.1-3.5-.1h-5.8c-1.4,0-2.5,0-3.5.1-.9,0-1.7.3-2.3.6s-1,.8-1.4,1.4c-.3.6-.5,1.5-.6,2.6-.1,1.1-.2,2.5-.2,4.2v.6c0,1.6,0,3,.2,4.1.1,1.1.3,1.9.6,2.6.3.6.8,1.1,1.4,1.4.6.3,1.4.5,2.3.6.9,0,2.1.1,3.5.1Z"/>
+    <path class="st0" d="M432.5,245.5v-22.1h2.9l22.2,18.7h0v-18.7h2.8v22.1h-2.9l-22.2-18.9h0v18.9h-2.8Z"/>
+    <path class="st0" d="M507.4,245.5l12.9-22.1h3.7l12.9,22.1h-3.2l-2.8-5.1h-17.5l-2.8,5.1h-3.2ZM514.7,238.2h14.8l-7.4-12.9-7.4,12.9Z"/>
+    <path class="st0" d="M558,245.5v-22.1h2.8v22.1h-2.8Z"/>
+  </g>
+  <path class="st0" d="M586.3,116.5s-44-3.7-80.3-6.4c-21.3-1.6-40.3-13.4-59-11.1-22.6,2.8-40.2,69.4-54.8,71.2-14.6,1.8-16.1-22-18.9-31.7-2.7-9.7-10.1-49.2-11.3-55.6-1.2-6.4-5.4-22.2-16.7-21.8-11.3.4-19.3,28.5-24.1,49-5.1,21.7-9.6,79.9-24.8,80.5-15.2.6-15.2-43.6-24.6-61.1-9.3-17.5-25.8-30.5-40-31.7-14.1-1.2-20.7,5.3-25.1,13.6-4.4,8.3-2.4,25.1-13.4,26-6.5.5-8.4-3.9-24.5-11.8-12.3-6-26-7.8-45.5-8.5-17.6-.6-59.5-.9-59.5-.9,0,0,55.4-3.4,79.1-4.6,23.6-1.2,54.3,2,68-21.1,13.7-23,20.1-32.4,28.9-31.2,8.8,1.2,16.5,14.4,25.3,41,8.8,26.6,13.2,48.4,29,45.3,15.8-3.1,21.4-54.3,23.7-66.3,2.3-12.1,6.6-62.6,20.6-64.4,14-1.8,21.7,40.4,27.2,59.9,5.4,19.4,22,33.8,38.4,38.3,12.4,3.4,182.4,3.3,182.4,3.3Z"/>
+</svg>
+</div>
+    <div class="header-tagline">
+      Cotizador de módulos<br>medvision.pro
+    </div>
+  </div>
+
+  <!-- ── Progress ── -->
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span id="stepLabel">Información de la clínica</span>
+      <span id="pct">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- ── Step container ── -->
+  <div id="stepContainer"></div>
+
+</div>
+
+<script>
+const CLINIC_STEP = {
+  id: 'clinic',
+  eyebrow: 'Información básica',
+  title: 'Cuéntanos sobre tu clínica',
+  sub: 'Datos generales para personalizar tu cotización.',
+};
+
+const ICONS = {
+  'patients': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  'appointments': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  'medical_records': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>`,
+  'prescriptions': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>`,
+  'test_reports': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/><path d="M9 3v18"/><path d="M13 7h8m-8 4h6m-6 4h4"/></svg>`,
+  'leads': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/><polyline points="16 11 18 13 22 9"/></svg>`,
+  'telemedicine': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`,
+  'patient_followup': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
+  'odontogram': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 5 5 8c0 2 .5 3.5 1 5l1 7h2l1-5h4l1 5h2l1-7c.5-1.5 1-3 1-5 0-3-3-6-7-6z"/></svg>`,
+  'aesthetic_simulator': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>`,
+  'room_management': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+  'ai_assistant': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4v1h1a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v1a4 4 0 0 1-8 0v-1H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1V6a4 4 0 0 1 4-4z"/><line x1="9" y1="10" x2="9" y2="10"/><line x1="15" y1="10" x2="15" y2="10"/><path d="M9.5 15a3.5 3.5 0 0 0 5 0"/></svg>`,
+  'consultation_recorder': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>`,
+  'billing': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`,
+  'accounting': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+  'expenses': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+  'commissions': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/><line x1="16" y1="2" x2="22" y2="8"/><line x1="22" y1="2" x2="16" y2="8"/></svg>`,
+  'payroll': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>`,
+  'credit_notes': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`,
+  'patient_wallet': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><circle cx="16" cy="12" r="2"/></svg>`,
+  'fixed_assets': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+  'insurance_claims': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>`,
+  'electronic_invoice': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+  'staff': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  'training': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+  'services': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
+  'departments': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="6" height="14"/><rect x="9" y="3" width="6" height="18"/><rect x="16" y="10" width="6" height="11"/></svg>`,
+  'lab_vendors': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/><circle cx="15" cy="15" r="3"/></svg>`,
+  'tasks': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
+  'inventory': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
+  'suppliers': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
+  'purchase_orders': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`,
+  'performance': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
+  'reports': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>`,
+  'advanced_metrics': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+  'messaging': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+  'medgemma':            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M2 20h20"/><path d="M7 20v-3"/><path d="M17 20v-3"/><path d="M9 7l-2-2"/><path d="M15 7l2-2"/></svg>',
+  'workflows': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>`,
+};
+
+const CAT_STEPS = [
+  {
+    id:'patient_care', eyebrow:'Módulos · Paso 1 de 9',
+    title:'Atención al paciente',
+    sub:'Todo lo relacionado con el seguimiento y gestión de pacientes.',
+    modules:[
+      {code:'patients',        name:'Gestión de pacientes',    desc:'Registro y administración',         icon:''},
+      {code:'appointments',    name:'Agenda de citas',          desc:'Calendario y citas médicas',        icon:''},
+      {code:'medical_records', name:'Historias clínicas',       desc:'Expedientes médicos electrónicos',  icon:''},
+      {code:'prescriptions',   name:'Recetas médicas',          desc:'Prescripciones y medicamentos',     icon:''},
+      {code:'test_reports',    name:'Reportes de laboratorio',  desc:'Exámenes y resultados',             icon:''},
+      {code:'leads',           name:'Gestión de leads',         desc:'Captación de prospectos',           icon:''},
+      {code:'telemedicine',    name:'Telemedicina',             desc:'Consultas por videollamada',        icon:''},
+      {code:'patient_followup',name:'Seguimiento con IA',       desc:'Seguimiento inteligente',           icon:''},
+    ]
+  },
+  {
+    id:'clinical', eyebrow:'Módulos · Paso 2 de 9',
+    title:'Clínico especializado',
+    sub:'Herramientas para especialidades médicas específicas.',
+    modules:[
+      {code:'odontogram',          name:'Odontograma',         desc:'Carta dental e historial odontológico', icon:''},
+      {code:'aesthetic_simulator', name:'Simulador estético',  desc:'Simulación de procedimientos',          icon:''},
+      {code:'room_management',     name:'Gestión de salas',    desc:'Asignación y control de salas',         icon:''},
+    ]
+  },
+  {
+    id:'ai', eyebrow:'Módulos · Paso 3 de 9',
+    title:'Inteligencia artificial',
+    sub:'Módulos impulsados por IA para automatizar y optimizar.',
+    modules:[
+      {code:'ai_assistant',          name:'Asistente IA',          desc:'Asistente inteligente para el equipo', icon:''},
+      {code:'consultation_recorder', name:'Grabador de consultas', desc:'Transcripción automática',             icon:''},
+      {code:'medgemma',              name:'Diagnóstico con IA',    desc:'Análisis de radiografías y síntomas clínicos con MedGemma (Google)', icon:''},
+    ]
+  },
+  {
+    id:'finance', eyebrow:'Módulos · Paso 4 de 9',
+    title:'Finanzas',
+    sub:'Todo el manejo financiero de tu clínica.',
+    modules:[
+      {code:'billing',           name:'Facturación',          desc:'Cobros y facturas',                    icon:''},
+      {code:'accounting',        name:'Contabilidad',         desc:'Partida doble y reportes financieros', icon:''},
+      {code:'expenses',          name:'Gastos',               desc:'Control de gastos operativos',         icon:''},
+      {code:'commissions',       name:'Comisiones',           desc:'Comisiones del personal',              icon:''},
+      {code:'payroll',           name:'Nómina',               desc:'Pagos al personal',                    icon:''},
+      {code:'credit_notes',      name:'Notas de crédito',     desc:'Contra facturas emitidas',             icon:''},
+      {code:'patient_wallet',    name:'Wallet del paciente',  desc:'Saldo a favor y depósitos',            icon:''},
+      {code:'fixed_assets',      name:'Activos fijos',        desc:'Equipos y mobiliario',                 icon:''},
+      {code:'insurance_claims',  name:'Reclamos de seguro',   desc:'CxC aseguradoras',                     icon:''},
+      {code:'electronic_invoice',name:'Factura electrónica',  desc:'FE ante autoridades fiscales',         icon:''},
+    ]
+  },
+  {
+    id:'ops', eyebrow:'Módulos · Paso 5 de 9',
+    title:'Operaciones',
+    sub:'Gestión interna del equipo y recursos.',
+    modules:[
+      {code:'staff',       name:'Personal',              desc:'Gestión de empleados',         icon:''},
+      {code:'training',    name:'Capacitación',          desc:'Rutas de aprendizaje por rol', icon:''},
+      {code:'services',    name:'Catálogo de servicios', desc:'Servicios y procedimientos',   icon:''},
+      {code:'departments', name:'Departamentos',         desc:'Organización por áreas',        icon:''},
+      {code:'lab_vendors', name:'Proveedores de lab',    desc:'Laboratorios externos',         icon:''},
+      {code:'tasks',       name:'Gestión de tareas',     desc:'Tablero Kanban del equipo',     icon:''},
+    ]
+  },
+  {
+    id:'inventory', eyebrow:'Módulos · Paso 6 de 9',
+    title:'Inventario y compras',
+    sub:'Control de insumos, proveedores y órdenes.',
+    modules:[
+      {code:'inventory',       name:'Inventario',         desc:'Control de stock e insumos',   icon:''},
+      {code:'suppliers',       name:'Proveedores',        desc:'Gestión de proveedores',       icon:''},
+      {code:'purchase_orders', name:'Órdenes de compra',  desc:'Solicitudes y aprobaciones',   icon:''},
+    ]
+  },
+  {
+    id:'analytics', eyebrow:'Módulos · Paso 7 de 9',
+    title:'Analítica',
+    sub:'Métricas, reportes y KPIs de la clínica.',
+    modules:[
+      {code:'performance',      name:'Rendimiento',       desc:'KPIs del equipo médico',           icon:''},
+      {code:'reports',          name:'Reportes',          desc:'Reportes avanzados exportables',   icon:''},
+      {code:'advanced_metrics', name:'Métricas avanzadas',desc:'Dashboard ejecutivo integral',     icon:''},
+    ]
+  },
+  {
+    id:'comms', eyebrow:'Módulos · Paso 8 de 9',
+    title:'Comunicaciones',
+    sub:'Canales de comunicación con pacientes y equipo.',
+    modules:[
+      {code:'messaging', name:'Email con IA',          desc:'Bandeja inteligente, respuestas automáticas y seguimiento por correo', icon:''},
+    ]
+  },
+  {
+    id:'automation', eyebrow:'Módulos · Paso 9 de 9',
+    title:'Automatización',
+    sub:'Flujos y procesos automáticos para tu clínica.',
+    modules:[
+      {code:'workflows', name:'Workflows', desc:'Automatización de procesos clínicos', icon:''},
+    ]
+  },
+];
+
+const TOTAL_STEPS = 1 + CAT_STEPS.length + 1;
+let currentStep = 0;
+const selected = {};
+CAT_STEPS.forEach(c => selected[c.id] = new Set());
+let clinicData = {};
+
+function updateProgress() {
+  const pct = Math.round((currentStep / (TOTAL_STEPS - 1)) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('pct').textContent = pct + '%';
+  if (currentStep === 0) {
+    document.getElementById('stepLabel').textContent = 'Información de la clínica';
+  } else if (currentStep <= CAT_STEPS.length) {
+    document.getElementById('stepLabel').textContent = `Módulos — Paso ${currentStep} de ${CAT_STEPS.length}`;
+  } else {
+    document.getElementById('stepLabel').textContent = 'Resumen final';
+  }
+}
+
+function render() {
+  updateProgress();
+  const container = document.getElementById('stepContainer');
+  if (currentStep === 0) {
+    renderClinic(container);
+  } else if (currentStep <= CAT_STEPS.length) {
+    renderCat(container, CAT_STEPS[currentStep - 1]);
+  } else {
+    renderSummary(container);
+  }
+}
+
+/* ─── Step 0: Clinic form ─── */
+function renderClinic(container) {
+  container.innerHTML = `
+  <div class="card">
+    <div class="card-eyebrow">${CLINIC_STEP.eyebrow}</div>
+    <div class="card-title">${CLINIC_STEP.title}</div>
+    <div class="card-sub">${CLINIC_STEP.sub}</div>
+    <div class="field-grid">
+      <div class="field field-full" id="f-cname">
+        <label>Nombre y apellido de contacto <span class="req">*</span></label>
+        <input id="clinic_name" type="text" placeholder="Ej: Carlos Méndez" value="${clinicData.name||''}">
+        <span class="err-msg">Campo requerido.</span>
+      </div>
+      <div class="field" id="f-cemail">
+        <label>Correo electrónico <span class="req">*</span></label>
+        <input id="clinic_email" type="email" placeholder="doctor@clinica.com" value="${clinicData.email||''}">
+        <span class="err-msg">Correo inválido.</span>
+      </div>
+      <div class="field" id="f-cphone">
+        <label>Teléfono / WhatsApp <span class="req">*</span></label>
+        <input id="clinic_phone" type="tel" placeholder="+1 555 000 0000" value="${clinicData.phone||''}">
+        <span class="err-msg">Campo requerido.</span>
+      </div>
+      <div class="field" id="f-ccountry">
+        <label>País <span class="req">*</span></label>
+        <select id="clinic_country" onchange="toggleOtroPais(this.value)">
+          ${['','México','Colombia','Ecuador','Perú','Chile','Argentina','Venezuela','Guatemala','Costa Rica','Panamá','República Dominicana','Estados Unidos','España','Otro'].map(c=>`<option value="${c}" ${clinicData.country===c?'selected':''}>${c||'— Seleccionar —'}</option>`).join('')}
+        </select>
+        <div class="otro-pais-wrap ${clinicData.country==='Otro'?'visible':''}" id="otro-pais-wrap">
+          <div class="field" id="f-cotropais" style="margin-top:8px;">
+            <label>Escribe el nombre de tu país <span class="req">*</span></label>
+            <input type="text" id="clinic_otro_pais" placeholder="Ej: Bolivia" value="${clinicData.otroPais||''}">
+            <span class="err-msg">Por favor escribe el nombre de tu país.</span>
+          </div>
+        </div>
+        <span class="err-msg">Selecciona un país.</span>
+      </div>
+      <div class="field" id="f-cspecialty">
+        <label>Especialidad principal <span class="req">*</span></label>
+        <select id="clinic_specialty" onchange="toggleOtraEspecialidad(this.value)">
+          ${['','Medicina General','Odontología','Medicina Estética','Nutrición','Psicología','Ginecología','Pediatría','Cardiología','Dermatología','Fisioterapia','Otra'].map(s=>`<option value="${s}" ${clinicData.specialty===s?'selected':''}>${s||'— Seleccionar —'}</option>`).join('')}
+        </select>
+        <span class="err-msg">Selecciona una especialidad.</span>
+      </div>
+      <div class="field-reveal ${clinicData.specialty==='Otra'?'visible':''}" id="f-otra-wrap">
+        <div class="field" id="f-cotra">
+          <label>¿Cuál es tu especialidad? <span class="req">*</span></label>
+          <input type="text" id="clinic_otra" placeholder="Ej: Medicina Deportiva" value="${clinicData.otraEspecialidad||''}">
+          <span class="err-msg">Por favor especifica tu especialidad.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Multi-clinic section ── -->
+    <div class="clinics-section">
+      <div class="clinics-count-row">
+        <div style="flex:1;">
+          <label style="font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">
+            ¿Cuántas clínicas o sedes tienes?
+          </label>
+          <select id="clinic_count" onchange="updateClinicBlocks()">
+            ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${(clinicData.clinics&&clinicData.clinics.length===n)?'selected':''}>${n} ${n===1?'clínica':'clínicas'}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div id="clinic-blocks"></div>
+    </div>
+
+    <div class="nav">
+      <button class="btn-next" onclick="submitClinic()">Continuar →</button>
+    </div>
+  </div>`;
+
+  // Render clinic blocks after injecting HTML
+  setTimeout(() => { updateClinicBlocks(true); toggleOtraEspecialidad(clinicData.specialty||''); toggleOtroPais(clinicData.country||''); }, 0);
+}
+
+function updateClinicBlocks(restoring = false) {
+  const count = parseInt(document.getElementById('clinic_count').value) || 1;
+  const container = document.getElementById('clinic-blocks');
+  const prev = (clinicData.clinics && restoring) ? clinicData.clinics : [];
+
+  let html_blocks = '';
+  for (let i = 0; i < count; i++) {
+    const p = prev[i] || {};
+    const defaultName = count === 1 ? (clinicData.name || '') : '';
+    html_blocks += `
+    <div class="clinic-block" id="block-${i}">
+      <div class="clinic-block-title">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Clínica ${i + 1}
+      </div>
+      <div class="clinic-block-grid">
+        <div class="clinic-block-field clinic-name-full">
+          <label>Nombre de la clínica ${i + 1} <span style="color:#d9534f">*</span></label>
+          <input type="text" id="cname-${i}" placeholder="Ej: Sede Norte" value="${p.name || defaultName}">
+          <span class="blk-err-msg"></span>
+        </div>
+        <div class="clinic-block-field">
+          <label>Médicos / Doctores <span style="color:#d9534f">*</span></label>
+          <input type="number" id="cdoc-${i}" min="0" placeholder="0"
+            value="${p.doctors !== undefined && p.doctors !== 0 ? p.doctors : ''}"
+            oninput="recalcStaff(${i})">
+        </div>
+        <div class="clinic-block-field">
+          <label>Personal administrativo <span style="color:#d9534f">*</span></label>
+          <input type="number" id="cadmin-${i}" min="0" placeholder="0"
+            value="${p.admin !== undefined ? p.admin : ''}"
+            oninput="recalcStaff(${i})">
+        </div>
+        <div class="staff-total-row" id="ctotal-${i}">
+          Total colaboradores: <strong>0</strong>
+        </div>
+      </div>
+    </div>`;
+  }
+  container.innerHTML = html_blocks;
+
+  // Re-run totals for restored values
+  for (let i = 0; i < count; i++) recalcStaff(i);
+}
+
+function recalcStaff(i) {
+  const doc   = parseInt(document.getElementById(`cdoc-${i}`).value)   || 0;
+  const admin = parseInt(document.getElementById(`cadmin-${i}`).value) || 0;
+  const total = doc + admin;
+  const row   = document.getElementById(`ctotal-${i}`);
+  row.innerHTML = `Total colaboradores: <strong>${total}</strong>`;
+  row.className = 'staff-total-row' + (total === 0 ? ' warn' : '');
+}
+
+
+
+
+function toggleOtroPais(val) {
+  const wrap = document.getElementById('otro-pais-wrap');
+  if (!wrap) return;
+  if (val === 'Otro') {
+    wrap.classList.add('visible');
+  } else {
+    wrap.classList.remove('visible');
+    const inp = document.getElementById('clinic_otro_pais');
+    if (inp) inp.value = '';
+  }
+}
+function toggleOtraEspecialidad(val) {
+  const wrap = document.getElementById('f-otra-wrap');
+  if (!wrap) return;
+  if (val === 'Otra') {
+    wrap.classList.add('visible');
+  } else {
+    wrap.classList.remove('visible');
+    const inp = document.getElementById('clinic_otra');
+    if (inp) inp.value = '';
+  }
+}
+function submitClinic() {
+  const fields = [
+    {id:'f-cname',      input:'clinic_name',      validate: v => v.trim() !== ''},
+    {id:'f-cemail',     input:'clinic_email',      validate: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)},
+    {id:'f-cphone',     input:'clinic_phone',      validate: v => v.trim() !== ''},
+    {id:'f-ccountry',   input:'clinic_country',    validate: v => v !== ''},
+    {id:'f-cspecialty', input:'clinic_specialty',  validate: v => v !== ''},
+    ...(document.getElementById('clinic_country').value === 'Otro'
+      ? [{id:'f-cotropais', input:'clinic_otro_pais', validate: v => v.trim() !== ''}]
+      : []),
+    ...(document.getElementById('clinic_specialty').value === 'Otra'
+      ? [{id:'f-cotra', input:'clinic_otra', validate: v => v.trim() !== ''}]
+      : []),
+  ];
+  let ok = true;
+  fields.forEach(f => {
+    const wrap = document.getElementById(f.id);
+    const inp  = document.getElementById(f.input);
+    wrap.classList.remove('has-err');
+    if (!f.validate(inp.value)) { wrap.classList.add('has-err'); ok = false; }
+  });
+  if (!ok) return;
+  // ── Validate clinic blocks ──────────────────────────────────────────────
+  const clinicCount = parseInt(document.getElementById('clinic_count').value) || 1;
+  const clinicsArr = [];
+  let blocksOk = true;
+
+  for (let i = 0; i < clinicCount; i++) {
+    const nameEl  = document.getElementById(`cname-${i}`);
+    const docEl   = document.getElementById(`cdoc-${i}`);
+    const adminEl = document.getElementById(`cadmin-${i}`);
+    const block   = document.getElementById(`block-${i}`);
+
+    // Helper: mark field error inside block
+    const markBlkField = (el, fieldEl, hasErr) => {
+      const wrap = fieldEl ? fieldEl.closest('.clinic-block-field') : null;
+      if (!wrap) return;
+      if (hasErr) {
+        wrap.classList.add('has-blk-err');
+        let msg = wrap.querySelector('.blk-err-msg');
+        if (!msg) { msg = document.createElement('span'); msg.className = 'blk-err-msg'; wrap.appendChild(msg); }
+        msg.textContent = 'Campo requerido.';
+      } else {
+        wrap.classList.remove('has-blk-err');
+      }
+    };
+
+    const nameVal  = nameEl  ? nameEl.value.trim()        : '';
+    const docVal   = docEl   ? parseInt(docEl.value)      : NaN;
+    const adminVal = adminEl ? parseInt(adminEl.value)    : NaN;
+
+    let blockErr = false;
+    if (!nameVal)           { markBlkField(block, nameEl, true);  blockErr = true; } else { markBlkField(block, nameEl, false); }
+    if (isNaN(docVal)   || docEl.value.trim() === '')   { markBlkField(block, docEl, true);   blockErr = true; } else { markBlkField(block, docEl, false); }
+    if (isNaN(adminVal) || adminEl.value.trim() === '') { markBlkField(block, adminEl, true);  blockErr = true; } else { markBlkField(block, adminEl, false); }
+
+    if (blockErr) {
+      blocksOk = false;
+      if (block) block.classList.add('has-block-err');
+    } else {
+      if (block) block.classList.remove('has-block-err');
+      clinicsArr.push({
+        name:    nameVal,
+        doctors: docVal,
+        admin:   adminVal,
+        total:   docVal + adminVal,
+      });
+    }
+  }
+
+  if (!blocksOk) { ok = false; }
+  clinicData = {
+    name:      document.getElementById('clinic_name').value,
+    email:     document.getElementById('clinic_email').value,
+    phone:     document.getElementById('clinic_phone').value,
+    country:   document.getElementById('clinic_country').value,
+    specialty: document.getElementById('clinic_specialty').value,
+    otroPais: document.getElementById('clinic_country').value === 'Otro'
+      ? document.getElementById('clinic_otro_pais').value.trim()
+      : '',
+    otraEspecialidad: document.getElementById('clinic_specialty').value === 'Otra'
+      ? document.getElementById('clinic_otra').value.trim()
+      : '',
+    clinics:   clinicsArr,
+  };
+  currentStep = 1;
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ─── Category step ─── */
+function renderCat(container, cat) {
+  const sel   = selected[cat.id];
+  const total = cat.modules.length;
+  container.innerHTML = `
+  <div class="card">
+    <div class="card-eyebrow">${cat.eyebrow}</div>
+    <div class="card-title">${cat.title}</div>
+    <div class="card-sub">${cat.sub}</div>
+    <div class="sel-bar">
+      <span class="sel-bar-count"><strong id="selN">${sel.size}</strong> de ${total} seleccionados</span>
+      <button class="toggle-all" onclick="toggleAll('${cat.id}', ${total})" id="toggleAllBtn">${sel.size === total ? 'Deseleccionar todos' : 'Seleccionar todos'}</button>
+    </div>
+    <div class="mod-grid" id="modGrid">
+      ${cat.modules.map(m => `
+        <div class="mod-card ${sel.has(m.code)?'on':''}" onclick="toggleMod('${cat.id}','${m.code}',${total})" data-code="${m.code}">
+          <input type="checkbox" ${sel.has(m.code)?'checked':''} onclick="event.stopPropagation();toggleMod('${cat.id}','${m.code}',${total})">
+          <span class="mod-icon">${ICONS[m.code] || ''}</span>
+          <div class="mod-name">${m.name}</div>
+          <div class="mod-desc">${m.desc}</div>
+        </div>`).join('')}
+      ${cat.id === 'comms' ? `
+      <div class="mod-card coming-soon">
+        <span class="mod-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        </span>
+        <div class="mod-name">WhatsApp con IA</div>
+        <div class="mod-desc">Atención automatizada, notificaciones y seguimiento de pacientes por WhatsApp</div>
+      </div>` : ''}
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack()">← Atrás</button>
+      <button class="btn-next" onclick="nextStep()">Continuar →</button>
+    </div>
+  </div>`;
+}
+
+function toggleMod(catId, code, total) {
+  const sel  = selected[catId];
+  const card = document.querySelector(`[data-code="${code}"]`);
+  const cb   = card.querySelector('input');
+  if (sel.has(code)) { sel.delete(code); card.classList.remove('on'); cb.checked = false; }
+  else               { sel.add(code);    card.classList.add('on');    cb.checked = true;  }
+  document.getElementById('selN').textContent = sel.size;
+  document.getElementById('toggleAllBtn').textContent = sel.size === total ? 'Deseleccionar todos' : 'Seleccionar todos';
+}
+
+function toggleAll(catId, total) {
+  const sel  = selected[catId];
+  const cat  = CAT_STEPS.find(c => c.id === catId);
+  const allOn = sel.size === total;
+  cat.modules.forEach(m => {
+    const card = document.querySelector(`[data-code="${m.code}"]`);
+    const cb   = card.querySelector('input');
+    if (allOn) { sel.delete(m.code); card.classList.remove('on'); cb.checked = false; }
+    else       { sel.add(m.code);    card.classList.add('on');    cb.checked = true;  }
+  });
+  document.getElementById('selN').textContent = sel.size;
+  document.getElementById('toggleAllBtn').textContent = allOn ? 'Seleccionar todos' : 'Deseleccionar todos';
+}
+
+/* ─── Summary ─── */
+function renderSummary(container) {
+  const totalMods = Object.values(selected).reduce((a, s) => a + s.size, 0);
+
+  let clinicRows = `
+    <div class="summary-clinic-row"><span>Contacto</span><span>${clinicData.name}</span></div>
+    <div class="summary-clinic-row"><span>Correo</span><span>${clinicData.email}</span></div>
+    <div class="summary-clinic-row"><span>Teléfono</span><span>${clinicData.phone}</span></div>
+    <div class="summary-clinic-row"><span>País</span><span>${clinicData.country === 'Otro' && clinicData.otroPais ? clinicData.otroPais : clinicData.country}</span></div>
+    <div class="summary-clinic-row"><span>Especialidad</span><span>${clinicData.specialty === 'Otra' && clinicData.otraEspecialidad ? clinicData.otraEspecialidad : clinicData.specialty}</span></div>
+    ${clinicData.clinics && clinicData.clinics.length > 0 ? `
+      <div class="summary-clinic-row">
+        <span>Sedes</span>
+        <span>${clinicData.clinics.length} clínica${clinicData.clinics.length > 1 ? 's' : ''}</span>
+      </div>
+      ${clinicData.clinics.map((c, i) => `
+        <div class="summary-clinic-row" style="padding-left:12px;border-left:2px solid var(--accent-border);">
+          <span style="color:var(--text);font-weight:500;">${c.name || 'Clínica ' + (i+1)}</span>
+          <span>${c.doctors} médico${c.doctors!==1?'s':''} · ${c.admin} admin · <strong>${c.total} total</strong></span>
+        </div>`).join('')}
+    ` : ''}
+  `;
+
+  let modSections = '';
+  CAT_STEPS.forEach(cat => {
+    const mods = cat.modules.filter(m => selected[cat.id].has(m.code));
+    if (!mods.length) return;
+    modSections += `
+      <div class="summary-section">
+        <div class="summary-cat">${cat.title}</div>
+        <div class="summary-chips">
+          ${mods.map(m => `<span class="chip">${m.icon} ${m.name}</span>`).join('')}
+        </div>
+      </div>`;
+  });
+
+  if (!modSections) {
+    modSections = `<p style="font-size:13px;color:var(--muted);">No seleccionaste módulos adicionales.</p>`;
+  }
+
+  container.innerHTML = `
+  <div class="card">
+    <div class="card-eyebrow">Último paso</div>
+    <div class="card-title">Resumen de tu cotización</div>
+    <div class="card-sub">Revisa los detalles antes de enviar.</div>
+
+    <div class="summary-section">
+      <div class="summary-cat">Tu clínica</div>
+      ${clinicRows}
+    </div>
+
+    <hr class="divider">
+
+    <div class="summary-cat" style="margin-bottom:14px;">Módulos seleccionados</div>
+    ${modSections}
+
+    <div class="total-badge">
+      <span class="total-badge-label">Total de módulos seleccionados</span>
+      <span class="total-badge-count">${totalMods} módulos</span>
+    </div>
+
+    <div class="nav">
+      <button class="btn-back" onclick="goBack()">← Atrás</button>
+      <button class="btn-next" onclick="submitQuote()">Enviar cotización 🚀</button>
+    </div>
+  </div>`;
+}
+
+function goBack() {
+  currentStep = Math.max(0, currentStep - 1);
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function nextStep() {
+  currentStep++;
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function submitQuote() {
+  const totalMods = Object.values(selected).reduce((a, s) => a + s.size, 0);
+
+  const payload = {
+    clinic: {
+      name:      clinicData.name,
+      email:     clinicData.email,
+      phone:     clinicData.phone,
+      country:   clinicData.country === 'Otro' && clinicData.otroPais ? clinicData.otroPais : clinicData.country,
+      specialty: clinicData.specialty === 'Otra' && clinicData.otraEspecialidad ? clinicData.otraEspecialidad : clinicData.specialty,
+    },
+    clinics:     clinicData.clinics,
+    total_staff: clinicData.clinics ? clinicData.clinics.reduce((a,c)=>a+c.total,0) : 0,
+    modules: Object.fromEntries(CAT_STEPS.map(c => [c.id, [...selected[c.id]]])),
+    total_modules: totalMods,
+  };
+
+  const btn = document.querySelector('.nav .btn-next');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; }
+
+  try {
+    const res = await fetch('/api/quote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('Server error ' + res.status);
+  } catch (err) {
+    console.error('Quote error:', err);
+    if (btn) { btn.disabled = false; btn.textContent = 'Enviar cotización 🚀'; }
+    alert('Hubo un error al enviar tu cotización. Por favor intenta de nuevo.');
+    return;
+  }
+
+  const container = document.getElementById('stepContainer');
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('pct').textContent = '100%';
+  document.getElementById('stepLabel').textContent = '¡Listo!';
+  container.innerHTML = `
+    <div class="card">
+      <div class="finish">
+        <span class="finish-icon">🎉</span>
+        <div class="finish-pill">✓ Solicitud recibida</div>
+        <h2>¡Cotización enviada!</h2>
+        <p>Recibimos tu solicitud con <strong>${totalMods} módulos</strong> seleccionados para <strong>${clinicData.name}</strong>. Te contactaremos pronto a <strong>${clinicData.email}</strong>.</p>
+        <button class="btn-next" style="max-width:240px;margin:0 auto;display:block;" onclick="restartQuote()">Nueva cotización</button>
+      </div>
+    </div>`;
+}
+
+function restartQuote() {
+  currentStep = 0;
+  clinicData  = {};
+  CAT_STEPS.forEach(c => selected[c.id] = new Set());
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+render();
+</script>
+</body>
+</html>
